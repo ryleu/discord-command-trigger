@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "discord-command-trigger"
+version = "0.1.0"
+description = "remotely triggers commands on a target machine without using ssh"
+authors = ["ryleu <69326171+ryleu@users.noreply.github.com>"]
+license = "GPL-2.0"
+readme = "README.md"
+packages = [{include = "discord_command_trigger"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+discord-py = "^2.3.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
