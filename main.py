@@ -48,21 +48,42 @@ async def on_message(message):
         flows = json.loads(file.read())
 
     for name in flows:
-        if message.content.startswith(name):
+        if message.content == name:
             os.system(f"cd {working_directory}")
 
-            to_run = "\n".join(flows[name])
-            await message.channel.send(f"running commands:\n```sh\n{to_run}\n```")
+            flow = flows[name]
+            steps = flow.get(
+                "steps", [f"echo 'The flow `{name}` has no associated steps.'"]
+            )
+            file_format = flow.get("format", "ansi")
+            description = flow.get("description", "*No description.*")
+            to_run = "\n".join(steps)
 
-            msg = os.popen(" ; ".join(flows[name])).read()
+            await message.channel.send(
+                f"## description:\n> {description}\n"
+                + f"## running commands:\n```sh\n{to_run}\n```"
+            )
+
+            msg = os.popen(" ; ".join(steps)).read()
 
             if len(msg) < 1000:
-                await message.channel.send(f"command output:\n```\n{msg}\n```")
+                if file_format == "discord":
+                    await message.channel.send(
+                        f"## command output:\n{msg}",
+                        allowed_mentions=discord.AllowedMentions.none(),
+                    )
+                else:
+                    await message.channel.send(
+                        f"## command output:\n```{file_format}\n{msg}\n```"
+                    )
             else:
                 await message.channel.send(
-                    "command output:",
-                    file=discord.File(filename="output.txt", fp=io.BytesIO(msg.encode())),
+                    "## command output:",
+                    file=discord.File(
+                        filename=f"{name}.{file_format}", fp=io.BytesIO(msg.encode())
+                    ),
                 )
+            break
 
 
 client.run(config["token"])
