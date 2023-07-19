@@ -4,5 +4,11 @@
     ],
     "ls": [
         "ls -alF"
+    ],
+    "free": [
+        "free -m"
+    ],
+    "flows": [
+        "cat flows.json"
     ]
 }

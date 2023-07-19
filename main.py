@@ -50,12 +50,19 @@ async def on_message(message):
     for name in flows:
         if message.content.startswith(name):
             os.system(f"cd {working_directory}")
+
+            to_run = "\n".join(flows[name])
+            await message.channel.send(f"running commands:\n```sh\n{to_run}\n```")
+
             msg = os.popen(" ; ".join(flows[name])).read()
 
-            await message.channel.send(
-                "command output:",
-                file=discord.File(filename="output.txt", fp=io.BytesIO(msg.encode())),
-            )
+            if len(msg) < 1000:
+                await message.channel.send(f"command output:\n```\n{msg}\n```")
+            else:
+                await message.channel.send(
+                    "command output:",
+                    file=discord.File(filename="output.txt", fp=io.BytesIO(msg.encode())),
+                )
 
 
 client.run(config["token"])
