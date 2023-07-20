@@ -11,8 +11,8 @@ be run sequentially) that you can then trigger with a message in Discord.
 To use this project, you must create a bot at
 <https://discord.com/developers/applications>.
 
-Command Trigger also uses [Poetry](https://python-poetry.org/). You can run it with
-this command:
+Command Trigger uses [Poetry](https://python-poetry.org/). You can run the
+project using poetry with this command:
 
 ```sh
 poetry run python main.py
