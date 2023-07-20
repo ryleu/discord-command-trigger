@@ -35,9 +35,10 @@
         "description": "Print the name and descriptions of all flows.",
         "steps": [
             "for flow in $(cat flows.json | jq -r 'keys|.[]')",
-            "  do echo \"\u001b[1m$flow:\u001b[0m $(cat flows.json | jq -r \".$flow|.description?\")\"",
+            "  do echo \"**$flow:** $(cat flows.json | jq -r \".$flow|.description?\")\"",
             "done"
-        ]
+        ],
+        "format": "discord"
     },
     "owners": {
         "description": "Display the owner(s) authorized to send commands.",
