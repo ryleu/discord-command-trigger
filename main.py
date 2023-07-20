@@ -1,3 +1,19 @@
+copyright_notice = """\
+Copyright © 2023 Riley <riley@ryleu.me>.
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License along
+with this program. If not, see <https://www.gnu.org/licenses/>. 
+"""
+
 import discord
 import json
 import io
@@ -26,15 +42,15 @@ with open("config.json") as file:
 intents = discord.Intents.default()
 intents.message_content = True
 
-client = discord.Client(intents=intents)
+bot = discord.Client(intents=intents)
 
 
-@client.event
+@bot.event
 async def on_ready():
-    print(f"logged in as {client.user}")
+    print(f"logged in as \u001b[1m{bot.user}\u001b[0m")
 
 
-@client.event
+@bot.event
 async def on_message(message):
     # make sure the message is from an valid user in a valid channel
     if (
@@ -50,7 +66,7 @@ async def on_message(message):
 
     for name in flows:
         if message.content == name:
-            # split out all of the data from the dict to variables for easy access
+            # split out the data from the dict to variables for easy access
             flow = flows[name]
             steps = flow.get(
                 "steps", [f"echo 'The flow `{name}` has no associated steps.'"]
@@ -100,4 +116,6 @@ async def on_message(message):
             break
 
 
-client.run(config["token"])
+if __name__ == "__main__":
+    print(copyright_notice)
+    bot.run(config["token"])

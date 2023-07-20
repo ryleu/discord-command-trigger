@@ -17,8 +17,15 @@
             "free -m"
         ]
     },
+    "code": {
+        "description": "Print the contents of the `main.py` file.",
+        "steps": [
+            "cat main.py"
+        ],
+        "format": "py"
+    },
     "flows_json": {
-        "description": "Print the output of the `flows.json` file.",
+        "description": "Print the contents of the `flows.json` file.",
         "steps": [
             "cat flows.json"
         ],
