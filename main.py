@@ -1,7 +1,7 @@
 import discord
 import json
-import os
 import io
+from subprocess import PIPE, Popen
 
 # pull the config data. this does not need to be updated live
 config = {}
@@ -11,14 +11,14 @@ with open("config.json") as file:
 # config.json example
 """
 {
-    "token": "token here",
-    "owner_ids": [
-        587967909641584661,
-        600130839870963725
-    ],
-    "channel_ids": [
-        795651596709003295
-    ]
+  "token": "token here",
+  "owner_ids": [
+    587967909641584661,
+    600130839870963725
+  ],
+  "channel_ids": [
+    795651596709003295
+  ]
 }
 """
 
@@ -65,30 +65,38 @@ async def on_message(message):
                 + f"## running commands:\n```sh\n{to_run}\n```"
             )
 
-            # combine all steps into a single command
-            msg = os.popen(" ; ".join(steps)).read()
+            # combine all steps into a single command & run it
+            p = Popen(" ; ".join(steps), shell=True, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = p.communicate()
 
             # we send it as a file if the response is over 1000 characters
             # so that it doesn't take up too much space
-            if len(msg) < 1000:
+            content = "## command output:"
+            files = []
+
+            if len(stdout) < 1000:
                 # special exception for the `discord` format to allow for
                 # pings and channel mentions
                 if file_format == "discord":
-                    await message.channel.send(
-                        f"## command output:\n{msg}",
-                        allowed_mentions=discord.AllowedMentions.none(),
-                    )
+                    content += f"\n{stdout.decode()}"
                 else:
-                    await message.channel.send(
-                        f"## command output:\n```{file_format}\n{msg}\n```"
-                    )
+                    content += f"\n```{file_format}\n{stdout.decode()}\n```"
             else:
-                await message.channel.send(
-                    "## command output:",
-                    file=discord.File(
-                        filename=f"{name}.{file_format}", fp=io.BytesIO(msg.encode())
-                    ),
+                files.append(
+                    discord.File(
+                        filename=f"{name}.{file_format}", fp=io.BytesIO(stdout)
+                    )
                 )
+
+            # add stderr as a file if we have any error
+            if stderr:
+                files.append(
+                    discord.File(filename=f"error.ansi", fp=io.BytesIO(stderr))
+                )
+
+            await message.channel.send(
+                content, files=files, allowed_mentions=discord.AllowedMentions.none()
+            )
             break
 
 
