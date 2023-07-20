@@ -34,20 +34,26 @@
     "flows": {
         "description": "Print the name and descriptions of all flows.",
         "steps": [
-            "for flow in $(cat flows.json | jq -r 'keys|.[]'); do echo \"\u001b[1m$flow:\u001b[0m $(cat flows.json | jq -r \".$flow|.description?\")\"; done"
+            "for flow in $(cat flows.json | jq -r 'keys|.[]')",
+            "  do echo \"\u001b[1m$flow:\u001b[0m $(cat flows.json | jq -r \".$flow|.description?\")\"",
+            "done"
         ]
     },
     "owners": {
         "description": "Display the owner(s) authorized to send commands.",
         "steps": [
-            "for owner in $(cat config.json | jq '.owner_ids|.[]'); do echo \"<@$owner>\"; done"
+            "for owner in $(cat config.json | jq '.owner_ids|.[]')",
+            "  do echo \"<@$owner>\"",
+            "done"
         ],
         "format": "discord"
     },
     "channels": {
         "description": "Display the channel(s) authorized to send commands in.",
         "steps": [
-            "for channel in $(cat config.json | jq '.channel_ids|.[]'); do echo \"<#$channel>\"; done"
+            "for channel in $(cat config.json | jq '.channel_ids|.[]')",
+            "  do echo \"<#$channel>\"",
+            "done"
         ],
         "format": "discord"
     }

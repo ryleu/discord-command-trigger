@@ -24,20 +24,6 @@ config = {}
 with open("config.json") as file:
     config = json.loads(file.read())
 
-# config.json example
-"""
-{
-  "token": "token here",
-  "owner_ids": [
-    587967909641584661,
-    600130839870963725
-  ],
-  "channel_ids": [
-    795651596709003295
-  ]
-}
-"""
-
 # this bot requires the message content intent
 intents = discord.Intents.default()
 intents.message_content = True
