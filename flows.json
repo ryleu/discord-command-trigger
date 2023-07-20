@@ -12,7 +12,7 @@
         ]
     },
     "free": {
-        "description": "Get the free memory in MiB",
+        "description": "Get the free memory in MiB.",
         "steps": [
             "free -m"
         ]

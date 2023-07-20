@@ -76,7 +76,7 @@ async def on_message(message):
             content = "## command output:"
             files = []
 
-            if len(stdout) < 1000:
+            if len(stdout) < config["max_codeblock_length"]:
                 # special exception for the `discord` format to allow for
                 # pings and channel mentions
                 if file_format == "discord":
@@ -86,14 +86,14 @@ async def on_message(message):
             else:
                 files.append(
                     discord.File(
-                        filename=f"{name}.{file_format}", fp=io.BytesIO(stdout)
+                        filename=f"stdout.{file_format}", fp=io.BytesIO(stdout)
                     )
                 )
 
             # add stderr as a file if we have any error
             if stderr:
                 files.append(
-                    discord.File(filename=f"error.ansi", fp=io.BytesIO(stderr))
+                    discord.File(filename=f"stderr.ansi", fp=io.BytesIO(stderr))
                 )
 
             await message.channel.send(
