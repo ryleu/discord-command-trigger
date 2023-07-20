@@ -6,7 +6,6 @@ Command Trigger works by using a list of pre-made "flows" (lists of commands to
 be run sequentially) that you can then trigger with a message in Discord.
 
 ## Use
---------------------------------------------------------------------------------
 To use this project, you must create a bot at
 <https://discord.com/developers/applications>.
 
@@ -18,7 +17,6 @@ poetry run python main.py
 ```
 
 ## Config File
---------------------------------------------------------------------------------
 The config file contains the authorized users (`owner_ids`), the authorized
 channels (`channel_ids`), and the bot's authorization token (`token`).
 
@@ -39,7 +37,6 @@ The format is as follows:
 ```
 
 ## Flows
---------------------------------------------------------------------------------
 A flow is made of four main components: the name, the description, the steps,
 and the output format. The `flows.json` file works as follows, replacing things
 in angle brackets with proper data:
