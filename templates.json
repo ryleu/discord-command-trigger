@@ -1,0 +1,34 @@
+{
+    "restart": {
+        "description": "Restart a systemctl service.",
+        "steps": [
+            "systemctl restart {service}"
+        ],
+        "replacements": [
+            {
+                "name": "service",
+                "values": [
+                    "jellyfin",
+                    "nginx",
+                    "firewalld"
+                ]
+            }
+        ]
+    },
+    "status": {
+        "description": "Get the status of a systemctl service.",
+        "steps": [
+            "SYSTEMD_COLORS=1 systemctl status {service}"
+        ],
+        "replacements": [
+            {
+                "name": "service",
+                "values": [
+                    "jellyfin",
+                    "nginx",
+                    "firewalld"
+                ]
+            }
+        ]
+    }
+}

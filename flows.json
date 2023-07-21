@@ -31,11 +31,27 @@
         ],
         "format": "json"
     },
+    "templates_json": {
+        "description": "Print the contents of the `templates.json` file.",
+        "steps": [
+            "cat templates.json"
+        ],
+        "format": "json"
+    },
     "flows": {
         "description": "Print the name and descriptions of all flows.",
         "steps": [
             "for flow in $(cat flows.json | jq -r 'keys|.[]')",
             "  do echo \"**$flow:** $(cat flows.json | jq -r \".$flow|.description?\")\"",
+            "done"
+        ],
+        "format": "discord"
+    },
+    "templates": {
+        "description": "Print the name and descriptions of all templates.",
+        "steps": [
+            "for templates in $(cat templates.json | jq -r 'keys|.[]')",
+            "  do echo \"**$templates:** $(cat templates.json | jq -r \".$templates|.description?\")\"",
             "done"
         ],
         "format": "discord"

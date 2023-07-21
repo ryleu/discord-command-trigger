@@ -36,6 +36,50 @@ async def on_ready():
     print(f"logged in as \u001b[1m{bot.user}\u001b[0m")
 
 
+async def parse_flow(message, flow, name):
+    # split out the data from the dict to variables for easy access
+    steps = flow.get("steps", [f"echo 'The flow `{name}` has no associated steps.'"])
+    file_format = flow.get("format", "ansi")
+    description = flow.get("description", "*No description.*")
+    to_run = "\n".join(steps)
+
+    # initial message informing the user what they just ran
+    await message.channel.send(
+        f"## description:\n> {description}\n"
+        + f"## running commands:\n```sh\n{to_run}\n```"
+    )
+
+    # combine all steps into a single command & run it
+    p = Popen(" ; ".join(steps), shell=True, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = p.communicate()
+
+    # we send it as a file if the response is over 1000 characters
+    # so that it doesn't take up too much space
+    content = "## command output:"
+    files = []
+
+    if stdout:
+        if len(stdout) < config["max_codeblock_length"]:
+            # special exception for the `discord` format to allow for
+            # pings and channel mentions
+            if file_format == "discord":
+                content += f"\n{stdout.decode()}"
+            else:
+                content += f"\n```{file_format}\n{stdout.decode()}\n```"
+        else:
+            files.append(
+                discord.File(filename=f"stdout.{file_format}", fp=io.BytesIO(stdout))
+            )
+
+    # add stderr as a file if we have any error
+    if stderr:
+        files.append(discord.File(filename=f"stderr.ansi", fp=io.BytesIO(stderr)))
+
+    await message.channel.send(
+        content, files=files, allowed_mentions=discord.AllowedMentions.none()
+    )
+
+
 @bot.event
 async def on_message(message):
     # make sure the message is from an valid user in a valid channel
@@ -52,54 +96,60 @@ async def on_message(message):
 
     for name in flows:
         if message.content == name:
-            # split out the data from the dict to variables for easy access
-            flow = flows[name]
-            steps = flow.get(
-                "steps", [f"echo 'The flow `{name}` has no associated steps.'"]
-            )
-            file_format = flow.get("format", "ansi")
-            description = flow.get("description", "*No description.*")
-            to_run = "\n".join(steps)
+            await parse_flow(message, flows[name], name)
+            return
 
-            # initial message informing the user what they just ran
-            await message.channel.send(
-                f"## description:\n> {description}\n"
-                + f"## running commands:\n```sh\n{to_run}\n```"
-            )
+    # the same goes for templates
+    templates = {}
+    with open("templates.json") as file:
+        templates = json.loads(file.read())
 
-            # combine all steps into a single command & run it
-            p = Popen(" ; ".join(steps), shell=True, stdout=PIPE, stderr=PIPE)
-            stdout, stderr = p.communicate()
+    for name in templates:
+        split = message.content.split(" ")
+        template_args = split[1:]
+        if split[0] == name:
+            template = templates[name]
 
-            # we send it as a file if the response is over 1000 characters
-            # so that it doesn't take up too much space
-            content = "## command output:"
-            files = []
-
-            if len(stdout) < config["max_codeblock_length"]:
-                # special exception for the `discord` format to allow for
-                # pings and channel mentions
-                if file_format == "discord":
-                    content += f"\n{stdout.decode()}"
-                else:
-                    content += f"\n```{file_format}\n{stdout.decode()}\n```"
-            else:
-                files.append(
-                    discord.File(
-                        filename=f"stdout.{file_format}", fp=io.BytesIO(stdout)
+            # ensure that there are the correct number of arguments
+            # and that each argument has a valid value
+            replacements = template["replacements"]
+            for i in range(len(replacements)):
+                replacement = replacements[i]
+                try:
+                    if template_args[i] not in replacement["values"]:
+                        return await message.channel.send(
+                            f"Error: `{template_args[i]}` is not a valid value for "
+                            + f"`{replacement['name']}` in `{name}`. "
+                            + f"Valid values: `{'`, `'.join(replacement['values'])}`."
+                        )
+                except IndexError:
+                    return await message.channel.send(
+                        f"Error: `{name}` requires {len(replacements)} argument(s) "
+                        + f"({len(template_args)} provided): "
+                        + f"`{'`, `'.join([ x['name'] for x in replacements])}`. "
                     )
-                )
 
-            # add stderr as a file if we have any error
-            if stderr:
-                files.append(
-                    discord.File(filename=f"stderr.ansi", fp=io.BytesIO(stderr))
+            # build a dict to format the template with
+            to_format = {
+                key: value
+                for key, value in zip(
+                    [ x["name"] for x in template["replacements"] ], template_args
                 )
+            }
 
-            await message.channel.send(
-                content, files=files, allowed_mentions=discord.AllowedMentions.none()
-            )
-            break
+            # build the flow from the formatted template
+            flow = {
+                "steps": [
+                    template["steps"][x].format(**to_format)
+                    for x in range(len(template["steps"]))
+                ]
+            }
+
+            for key in ["description", "format"]:
+                if key in template:
+                    flow[key] = template[key]
+
+            await parse_flow(message, flow, name)
 
 
 if __name__ == "__main__":
